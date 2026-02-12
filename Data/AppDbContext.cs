@@ -11,4 +11,6 @@ public class AppDbContext : IdentityDbContext<User>
         base(options)
     {
     }
+    
+    public DbSet<Post> Posts { get; set; } = null!;
 };

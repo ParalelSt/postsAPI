@@ -1,8 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace PostsAPI.DTO;
 
 public class LoginUserDto
 {
-    public string? UserName { get; set; }
+    [EmailAddress]
+    public string? Email { get; set; } = string.Empty;
     
-    public string? Password { get; set; }
+    public string? Password { get; set; } = string.Empty;
 }

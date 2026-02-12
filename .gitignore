@@ -1,3 +1,6 @@
 obj/
 bin/
 .idea/
+
+appsettings.json
+appsettings.*.json

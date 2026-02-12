@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PostsAPI.DTO;
 
-public class RegisterUserDto
+public class UpdateUserDto
 {
     public string? UserName { get; set; } = string.Empty;
     
@@ -15,6 +15,4 @@ public class RegisterUserDto
     [EmailAddress]
     [MaxLength(30)]
     public string? Email { get; set; } = string.Empty;
-    
-    public string? Password { get; set; } = string.Empty;
 }

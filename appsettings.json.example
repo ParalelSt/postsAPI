@@ -7,9 +7,12 @@
   },
   "AllowedHosts": "*",
   "Jwt": {
-    "Key": "nvhxTH3KwqiRE4Ji3XfDM4SHqSqUmvX9Co2Izrtof528RdedblkJuH7BtTyCWmsQ",
+    "Key": "YOUR_JWT_KEY_HERE",
     "Issuer": "PostsAPI",
     "Audience": "PostsAPI"
+  },
+  "AdminAccount": {
+    "Email": "admin@admin.com",
+    "Password": "YOUR_PASSWORD_HERE"
   }
 }
-

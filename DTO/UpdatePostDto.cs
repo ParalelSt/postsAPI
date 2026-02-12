@@ -1,12 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PostsAPI.Entities;
+namespace PostsAPI.DTO;
 
-public class Post
+public class UpdatePostDto
 {
-    public string? PostId { get; set; }
-    
-    public string? UserId { get; set; }
  
     [MaxLength(40)]
     public string? Title { get; set; }

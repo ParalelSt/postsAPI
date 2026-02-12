@@ -8,126 +8,104 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PostsAPI.DTO;
 using PostsAPI.Entities;
+using PostsAPI.Services;
 
 namespace PostsAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class UserController : ControllerBase
+public class UserController : BaseApiController
 {
-    private readonly UserManager<User> _userManager;
-    private readonly IConfiguration _config;
+    private readonly IUserService _userService;
 
-    public UserController(UserManager<User> userManager, IConfiguration config)
+    public UserController(IUserService userService)
     {
-        _userManager = userManager;
-        _config = config;
+        _userService = userService;
     }
-    
-    private string CreateToken(User user)
-    {
-        var roles = _userManager.GetRolesAsync(user).Result;
 
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, user.UserName!)
-        };
+    //Get all Users
 
-        foreach (var role in roles)
-            claims.Add(new Claim(ClaimTypes.Role, role));
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddHours(1),
-            signingCredentials: creds);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-    
     [HttpGet, Authorize(Roles = "Admin")]
-    public ActionResult<List<User>> GetAllUsers()
+    public async Task<ActionResult<List<User>>> GetAllUsers()
+        => await _userService.GetAllUsers();
+
+    //Find Users by username
+
+    [HttpGet("users/{searchTerm}"), Authorize(Roles = "Admin, User")]
+    public async Task<ActionResult<List<UserSearchResponseDto>>> GetUsersBySearch(string searchTerm)
+        => await _userService.GetUsersBySearch(searchTerm);
+
+    //Find current User
+
+    [HttpGet("current-user"), Authorize(Roles = "Admin, User")]
+    public async Task<ActionResult<User>> GetCurrentUser()
     {
-        var users = _userManager.Users.ToList();
-        return Ok(users);
-    }
-
-    [HttpGet("{userName}")]
-    public async Task<IActionResult> GetUser(string userName)
-    {
-        var normalized = _userManager.NormalizeName(userName);
+        var userId = GetUserId();
         
-        var user = await _userManager.Users.FirstOrDefaultAsync(u => 
-            u.NormalizedUserName != null && u.NormalizedUserName.Contains(normalized));
-        
-        if (user == null)
-            return NotFound();
-
-        var roles = await _userManager.GetRolesAsync(user);
-
-        return Ok(new
+        if (userId == null)
         {
-            user.UserName,
-            Roles = roles
-        });
+            throw new InvalidOperationException("You must be logged in");
+        }
+
+        return await _userService.GetCurrentUser(userId);
     }
     
     //Register User
 
     [HttpPost("register")]
-    public async Task<ActionResult<User>> RegisterUser(RegisterUserDto user)
-    {
-        var initials = (user.FirstName[0], user.LastName[0]).ToString().ToUpper();
-        
-        var createdUser = new User()
-        {
-            UserName = user.Email,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Initials = initials,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        var create = await _userManager.CreateAsync(createdUser, user.Password!);
-        if (!create.Succeeded) return BadRequest(create.Errors);
-
-        await _userManager.AddToRoleAsync(createdUser, "User");
-        
-        var roles = await _userManager.GetRolesAsync(createdUser);
-
-        return Ok(new
-        {
-            createdUser, Roles = roles
-        });
-    }
+    public async Task<ActionResult<RegisterUserResponseDto>> RegisterUser(RegisterUserDto dto)
+        => await _userService.RegisterUser(dto);
     
     //Login User
     
     [HttpPost("login")]
-    public async Task<ActionResult<User>> LogInUser(LoginUserDto loginUser)
+    public async Task<ActionResult<LoginUserResponseDto>> LoginUser(LoginUserDto dto)
+     => await _userService.LoginUser(dto);
+    
+    
+    //Update User
+
+    [HttpPatch("update-user"), Authorize(Roles = "Admin, User")]
+    public async Task<ActionResult<UpdateUserResponseDto>> UpdateUser(UpdateUserDto dto)
     {
-        var user = await _userManager.FindByNameAsync(loginUser.UserName);
-        if (user == null)
+        var userId = GetUserId();
+        
+        if (userId == null)
         {
-            return Unauthorized();
+            throw new InvalidOperationException("You must be logged in");
         }
 
-        var checkUserPassword = await _userManager.CheckPasswordAsync(user, loginUser.Password);
+        return await _userService.UpdateUser(userId, dto);
+    }
+    
+    //Update User Password
 
-        var roles = await _userManager.GetRolesAsync(user);
-        if (roles.Contains("User"))
+    [HttpPatch("change-password"), Authorize(Roles = "Admin, User")]
+    public async Task<ActionResult<string>> UpdateUserPassword(UpdateUserPasswordDto dto)
+    {
+        var userId = GetUserId();
+        
+        if (userId == null)
         {
-            return Forbid();
+            throw new InvalidOperationException("You must be logged in");
         }
 
-        var token = CreateToken(user);
+        return await _userService.UpdateUserPassword(userId, dto);
+    }
+    
+    
+    //Delete User
 
-        return Ok(new { user, token });
+    [HttpDelete, Authorize(Roles = "Admin, User")]
+    public async Task<ActionResult<string>> DeleteUser()
+    {
+        var userId = GetUserId();
+        
+        if (userId == null)
+        {
+            throw new InvalidOperationException("You must be logged in");
+        }
+
+        return await _userService.DeleteUser(userId);
     }
 }

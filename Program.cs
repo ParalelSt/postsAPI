@@ -6,7 +6,9 @@ using PostsAPI.Entities;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.IdentityModel.Tokens;
+using PostsAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +56,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("PostsAPI");
 });
 
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -89,21 +94,22 @@ using (var scope = app.Services.CreateScope())
     var userManager = 
         scope.ServiceProvider.GetRequiredService<UserManager<User>>();
 
-    const string email = "admin@admin.com";
-    string password = "posts#Da5";
+    var adminEmail = builder.Configuration["AdminAccount:Email"];
+    var adminPassword = builder.Configuration["AdminAccount:Password"];
 
-    if (await userManager.FindByEmailAsync(email) == null)
+    if (adminEmail != null && adminPassword != null)
     {
-        var user = new User();
-        user.Email = email;
-        user.UserName = email;
+        if (await userManager.FindByEmailAsync(adminEmail) == null)
+        {
+            var user = new User();
+            user.Email = adminEmail;
+            user.UserName = adminEmail;
 
-        await userManager.CreateAsync(user, password);
+            await userManager.CreateAsync(user, adminPassword);
 
-        await userManager.AddToRoleAsync(user, "Admin");
+            await userManager.AddToRoleAsync(user, "Admin");
+        }
     }
-    
-    
 }
 
 
