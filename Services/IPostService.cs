@@ -5,9 +5,9 @@ namespace PostsAPI.Services;
 
 public interface IPostService
 {
-    Task<List<List<PostResponseDto>>> GetAllPosts();
-    Task<Post> CreatePost(CreatePostDto dto);
-    Task<List<Post>> GetPostsFromCurrentUser();
-    Task<Post> UpdatePost(UpdatePostDto dto);
-    Task<string> DeletePost(string userId);
+    Task<List<PostResponseDto>> GetAllPosts();
+    Task<CreatePostResponseDto> CreatePost(string userId, CreatePostDto dto);
+    Task<List<Post>> GetPostsFromCurrentUser(string userId);
+    Task<UpdatePostResponseDto> UpdatePost(string userId, string postId, UpdatePostDto dto);
+    Task<string> DeletePost(string userId, string postId);
 }

@@ -5,122 +5,103 @@ using Microsoft.EntityFrameworkCore;
 using PostsAPI.Data;
 using PostsAPI.DTO;
 using PostsAPI.Entities;
+using PostsAPI.Services;
 
 namespace PostsAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PostController : ControllerBase
+public class PostController : BaseApiController
 {
-    
-    private readonly AppDbContext _dbContext;
+    private readonly IPostService _postService;
 
-    public PostController(AppDbContext dbContext) => _dbContext = dbContext;
-    
-    //Fetch All Posts
-    
-    [HttpGet("posts"), Authorize(Roles = "Admin, User")]
-    public async Task<ActionResult<List<PostResponseDto>>> GetPosts()
+    public PostController(IPostService postService)
     {
-        var posts = await _dbContext.Posts.Select(p => new PostResponseDto
-        {
-            Title = p.Title,
-            Content = p.Content
-        }).ToListAsync();
-        
-        return Ok(posts);
+        _postService = postService;
     }
-    
+
+    //Fetch All Posts
+
+    [HttpGet("posts"), Authorize(Roles = "Admin, User")]
+    public async Task<ActionResult<List<PostResponseDto>>> GetAllPosts()
+       => await _postService.GetAllPosts();
+  
+
+
     //Create Post
 
     [HttpPost, Authorize(Roles = "Admin, User")]
-    public async Task<ActionResult<Post>> CreatePost(CreatePostDto createPost)
+    public async Task<ActionResult<CreatePostResponseDto>> CreatePost(CreatePostDto dto)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        if (createPost.Content == null || createPost.Title == null)
+        try
         {
-            return BadRequest("You must enter the post details");
+            var userId = GetUserId();
+            var result = await _postService.CreatePost(userId, dto);
+
+            return Ok(result);
         }
-
-        var post = new Post
-        {   
-            PostId = Guid.NewGuid().ToString(),
-            UserId = userId,
-            Title = createPost.Title,
-            Content = createPost.Content
-            
-        };
-
-        _dbContext.Posts.Add((post));
-        await _dbContext.SaveChangesAsync();
-
-        return Ok(new { post.Title, post.Content });
+        catch (KeyNotFoundException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
+    
     
     //Find all posts from the current User
 
     [HttpGet, Authorize(Roles = "Admin, User")]
-    public async Task<ActionResult<List<Post>>> GetPostsFromUser()
+    public async Task<ActionResult<List<Post>>> GetPostsFromCurrentUser()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
-        var posts = await _dbContext.Posts.Where(p => p.UserId == userId).ToListAsync();
+        try
+        {
+            var userId = GetUserId();
+            var result = await _postService.GetPostsFromCurrentUser(userId);
 
-        return Ok(posts);
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
+    
     
     //Update post from the current User
 
     [HttpPut("{postId}"), Authorize(Roles = "Admin, User")]
-    public async Task<ActionResult<Post>> UpdatePost(string postId ,UpdatePostDto updatedPost)
-    {   
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        
-        var post = await _dbContext.Posts.FindAsync(postId);
-
-        if (post == null)
+    public async Task<ActionResult<UpdatePostResponseDto>> UpdatePost(string postId, UpdatePostDto dto)
+    {
+        try
         {
-            return NotFound("Post not found");
+            var userId = GetUserId();
+            var result = await _postService.UpdatePost(userId, postId, dto);
+
+            return Ok(result);
         }
-        
-        if (post.UserId != userId)
+        catch (KeyNotFoundException ex)
         {
-            return Unauthorized("You can only edit your own posts");
+            return BadRequest(ex.Message);
         }
-        
-        post.Title = updatedPost.Title;
-        post.Content = updatedPost.Content;
-
-        await _dbContext.SaveChangesAsync();
-
-        return Ok(post);
     }
+    
     
     //Delete the post from the current list of user's posts
-    
+
     [HttpDelete("{postId}"), Authorize(Roles = "Admin, User")]
-    public async Task<ActionResult<Post>> DeletePost(string postId)
+    public async Task<ActionResult<string>> DeletePost(string postId)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-        var post = await _dbContext.Posts.FindAsync(postId);
-
-        if (post == null)
+        try
         {
-            return NotFound("Post not found");
-        }
+            var userId = GetUserId();
+            var result = await _postService.DeletePost(userId, postId);
 
-        if (post.UserId != userId)
+            return Ok(result);
+        }
+        catch (KeyNotFoundException ex)
         {
-            return Unauthorized("This is not your post");
+            return BadRequest(ex.Message);
         }
-        
-        _dbContext.Remove(post);
-        await _dbContext.SaveChangesAsync();
-
-        return Ok("The post has been removed");
-
     }
+    
 
 }
