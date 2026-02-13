@@ -10,4 +10,9 @@ public class BaseApiController: ControllerBase
     {
         return User.FindFirstValue(ClaimTypes.NameIdentifier);
     }
+
+    protected string GetUserName()
+    {
+        return User.FindFirstValue(ClaimTypes.Name);
+    }
 }

@@ -1,7 +1,8 @@
-namespace PostsAPI.DTO;
+namespace PostsAPI.DTO.Post.Response;
 
 public class CreatePostResponseDto
 {
-    public string? Title { get; set; }
-    public string? Content { get; set; }
+    public required string Author { get; set; }
+    public required string Title { get; set; }
+    public required string Content { get; set; }
 }

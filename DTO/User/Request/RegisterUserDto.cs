@@ -1,20 +1,23 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PostsAPI.DTO;
+namespace PostsAPI.DTO.User.Request;
 
 public class RegisterUserDto
 {
-    public string? UserName { get; set; } = string.Empty;
+    [MaxLength(20)]
+    public required string UserName { get; set; }
     
     [MaxLength(50)]
-    public string? FirstName { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
     
     [MaxLength(50)]
-    public string? LastName { get; set; } = string.Empty;
+    public string? LastName { get; set; }
     
+    [MaxLength(254)]
     [EmailAddress]
-    [MaxLength(30)]
-    public string? Email { get; set; } = string.Empty;
+    public required string Email { get; set; }
     
-    public string? Password { get; set; } = string.Empty;
+    [MinLength(8)]
+    [MaxLength(256)]
+    public required string Password { get; set; }
 }

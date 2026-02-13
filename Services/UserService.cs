@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using PostsAPI.DTO;
+using PostsAPI.DTO.User.Request;
+using PostsAPI.DTO.User.Response;
 using PostsAPI.Entities;
 
 namespace PostsAPI.Services;

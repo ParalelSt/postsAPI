@@ -3,7 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PostsAPI.Data;
-using PostsAPI.DTO;
+using PostsAPI.DTO.Post.Request;
+using PostsAPI.DTO.Post.Response;
 using PostsAPI.Entities;
 using PostsAPI.Services;
 
@@ -36,7 +37,8 @@ public class PostController : BaseApiController
         try
         {
             var userId = GetUserId();
-            var result = await _postService.CreatePost(userId, dto);
+            var userName = GetUserName();
+            var result = await _postService.CreatePost(userName, userId, dto);
 
             return Ok(result);
         }
@@ -50,7 +52,7 @@ public class PostController : BaseApiController
     //Find all posts from the current User
 
     [HttpGet, Authorize(Roles = "Admin, User")]
-    public async Task<ActionResult<List<Post>>> GetPostsFromCurrentUser()
+    public async Task<ActionResult<List<PostResponseDto>>> GetPostsFromCurrentUser()
     {
         try
         {

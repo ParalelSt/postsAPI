@@ -1,11 +1,12 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PostsAPI.DTO;
+namespace PostsAPI.DTO.Post.Request;
 
 public class CreatePostDto
 {
-    [MaxLength(30)]
-    public string? Title { get; set; } = string.Empty;
+    [MaxLength(40)]
+    public required string Title { get; set; }
     
-    public string? Content { get; set; } = string.Empty;
+    [MaxLength(256)]
+    public required string Content { get; set; }
 }

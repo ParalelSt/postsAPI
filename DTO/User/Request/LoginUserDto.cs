@@ -1,11 +1,14 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PostsAPI.DTO;
+namespace PostsAPI.DTO.User.Request;
 
 public class LoginUserDto
-{
+{   
+    [MaxLength(254)]
     [EmailAddress]
-    public string? Email { get; set; } = string.Empty;
+    public required string Email { get; set; }
     
-    public string? Password { get; set; } = string.Empty;
+    [MinLength(8)]
+    [MaxLength(256)]
+    public required string Password { get; set; }
 }

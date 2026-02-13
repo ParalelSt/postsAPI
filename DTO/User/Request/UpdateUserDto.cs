@@ -1,18 +1,19 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace PostsAPI.DTO;
+namespace PostsAPI.DTO.User.Request;
 
 public class UpdateUserDto
 {
-    public string? UserName { get; set; } = string.Empty;
+    [MaxLength(20)]
+    public string? UserName { get; set; }
     
     [MaxLength(50)]
-    public string? FirstName { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
     
     [MaxLength(50)]
-    public string? LastName { get; set; } = string.Empty;
+    public string? LastName { get; set; }
     
+    [MaxLength(254)]
     [EmailAddress]
-    [MaxLength(30)]
-    public string? Email { get; set; } = string.Empty;
+    public string? Email { get; set; }
 }

@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using PostsAPI.DTO;
+using PostsAPI.DTO.User.Request;
+using PostsAPI.DTO.User.Response;
 using PostsAPI.Entities;
 using PostsAPI.Services;
 

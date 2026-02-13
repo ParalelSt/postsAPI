@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using PostsAPI.Data;
-using PostsAPI.DTO;
+using PostsAPI.DTO.Post.Request;
+using PostsAPI.DTO.Post.Response;
 using PostsAPI.Entities;
 
 namespace PostsAPI.Services;
@@ -19,6 +20,7 @@ public class PostService: IPostService
     {
         var posts = await _dbContext.Posts.Select(p => new PostResponseDto
         {
+            Author = p.Author,
             Title = p.Title,
             Content = p.Content
         }).ToListAsync();
@@ -26,9 +28,9 @@ public class PostService: IPostService
         return posts;
     }
     
-    public async Task<CreatePostResponseDto> CreatePost(string userId, CreatePostDto createPost)
+    public async Task<CreatePostResponseDto> CreatePost(string userName,string userId, CreatePostDto createPost)
     {
-        if (createPost.Content == null || createPost.Title == null)
+        if (string.IsNullOrWhiteSpace(createPost.Content) || string.IsNullOrWhiteSpace(createPost.Title))
         {
             throw new KeyNotFoundException("You must enter the post details");
         }
@@ -37,6 +39,7 @@ public class PostService: IPostService
         {   
             PostId = Guid.NewGuid().ToString(),
             UserId = userId,
+            Author = userName,
             Title = createPost.Title,
             Content = createPost.Content
             
@@ -45,14 +48,20 @@ public class PostService: IPostService
         _dbContext.Posts.Add((post));
         await _dbContext.SaveChangesAsync();
 
-        return new CreatePostResponseDto{ Title = post.Title, Content = post.Content};
+        return new CreatePostResponseDto{
+            Author = post.Author,
+            Title = post.Title, 
+            Content = post.Content};
     }
     
-    public async Task<List<Post>> GetPostsFromCurrentUser(string userId)
+    public async Task<List<PostResponseDto>> GetPostsFromCurrentUser(string userId)
     {
-        var posts = await _dbContext.Posts.Where(p => p.UserId == userId).ToListAsync();
-
-        return posts;
+        return await _dbContext.Posts.Where(p => p.UserId == userId).Select(p => new PostResponseDto
+        {
+            Author = p.Author,
+            Title = p.Title,
+            Content = p.Content
+        }).ToListAsync();
     }
     
     public async Task<UpdatePostResponseDto> UpdatePost(string userId, string postId ,UpdatePostDto updatedPost)
@@ -68,6 +77,11 @@ public class PostService: IPostService
         {
             throw new UnauthorizedAccessException("You can only edit your own posts");
         }
+
+        if (string.IsNullOrWhiteSpace(updatedPost.Title) || string.IsNullOrWhiteSpace(updatedPost.Content))
+        {
+            throw new KeyNotFoundException("You must enter either a new title or new content");
+        }
         
         post.Title = updatedPost.Title;
         post.Content = updatedPost.Content;
@@ -77,7 +91,12 @@ public class PostService: IPostService
         return new UpdatePostResponseDto
         {
             Message = "The following post has been updated",
-            Post = post
+            Post = new PostResponseDto
+            {
+                Author = post.Author,
+                Title = post.Title,
+                Content = post.Content
+            }
         };
     }
     

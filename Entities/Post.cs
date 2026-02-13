@@ -4,12 +4,16 @@ namespace PostsAPI.Entities;
 
 public class Post
 {
-    public string? PostId { get; set; }
+    public required string PostId { get; set; }
     
-    public string? UserId { get; set; }
+    public required string UserId { get; set; }
+    
+    [MaxLength(40)]
+    public required string Author { get; set; }
  
     [MaxLength(40)]
-    public string? Title { get; set; }
+    public required string Title { get; set; }
     
-    public string? Content { get; set; }
+    [MaxLength(256)]
+    public required string Content { get; set; }
 }
