@@ -26,13 +26,13 @@ public class UserController : BaseApiController
 
     //Get all Users
 
-    [HttpGet, Authorize(Roles = "Admin")]
+    [HttpGet("users"), Authorize(Roles = "Admin")]
     public async Task<ActionResult<List<User>>> GetAllUsers()
         => await _userService.GetAllUsers();
 
     //Find Users by username
 
-    [HttpGet("users/{searchTerm}"), Authorize(Roles = "Admin, User")]
+    [HttpGet("users-by-search/{searchTerm}"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<List<UserSearchResponseDto>>> GetUsersBySearch(string searchTerm)
         => await _userService.GetUsersBySearch(searchTerm);
 

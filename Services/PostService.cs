@@ -54,10 +54,11 @@ public class PostService: IPostService
             Content = post.Content};
     }
     
-    public async Task<List<PostResponseDto>> GetPostsFromCurrentUser(string userId)
+    public async Task<List<CurrentUserPostResponseDto>> GetPostsFromCurrentUser(string userId)
     {
-        return await _dbContext.Posts.Where(p => p.UserId == userId).Select(p => new PostResponseDto
-        {
+        return await _dbContext.Posts.Where(p => p.UserId == userId).Select(p => new CurrentUserPostResponseDto
+        {   
+            PostId = p.PostId,
             Author = p.Author,
             Title = p.Title,
             Content = p.Content

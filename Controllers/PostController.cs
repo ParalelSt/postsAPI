@@ -31,7 +31,7 @@ public class PostController : BaseApiController
 
     //Create Post
 
-    [HttpPost, Authorize(Roles = "Admin, User")]
+    [HttpPost("create-post"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<CreatePostResponseDto>> CreatePost(CreatePostDto dto)
     {
         try
@@ -51,7 +51,7 @@ public class PostController : BaseApiController
     
     //Find all posts from the current User
 
-    [HttpGet, Authorize(Roles = "Admin, User")]
+    [HttpGet("posts-current-user"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<List<PostResponseDto>>> GetPostsFromCurrentUser()
     {
         try
@@ -70,7 +70,7 @@ public class PostController : BaseApiController
     
     //Update post from the current User
 
-    [HttpPut("{postId}"), Authorize(Roles = "Admin, User")]
+    [HttpPut("update-post/{postId}"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<UpdatePostResponseDto>> UpdatePost(string postId, UpdatePostDto dto)
     {
         try
@@ -89,7 +89,7 @@ public class PostController : BaseApiController
     
     //Delete the post from the current list of user's posts
 
-    [HttpDelete("{postId}"), Authorize(Roles = "Admin, User")]
+    [HttpDelete("delete-post/{postId}"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<string>> DeletePost(string postId)
     {
         try

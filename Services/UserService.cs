@@ -40,7 +40,7 @@ public class UserService: IUserService
             var roles = await _userManager.GetRolesAsync(user);
             result.Add(new UserSearchResponseDto 
             {
-                UserName = user.UserName,
+                UserName = user.UserName ?? string.Empty,
                 Roles = roles.ToList()
             });
         }
@@ -60,10 +60,11 @@ public class UserService: IUserService
     
     public async Task<RegisterUserResponseDto> RegisterUser(RegisterUserDto user)
     {
-        if (string.IsNullOrWhiteSpace(user.FirstName) || string.IsNullOrWhiteSpace(user.LastName))
-            throw new InvalidOperationException("First name and last name are required");
-        
-        var initials = (user.FirstName[0], user.LastName[0]).ToString().ToUpper();
+        var initials = string.Empty;
+        if (!string.IsNullOrWhiteSpace(user.FirstName) && !string.IsNullOrWhiteSpace(user.LastName))
+        {
+            initials = (user.FirstName[0], user.LastName[0]).ToString().ToUpper();
+        }
 
         if (string.IsNullOrWhiteSpace(user.Email))
             throw new InvalidOperationException("Email is required");
@@ -141,7 +142,7 @@ public class UserService: IUserService
             Message = "Logged in successfully",
             User = new LoginResponseDto
             {
-                UserName = user.UserName,
+                UserName = user.UserName ?? string.Empty, //IdentityUser.UserName is defined as a "string?"
                 Email = user.Email,
                 Roles = roles.ToList(),
                 Token = token
@@ -163,17 +164,25 @@ public class UserService: IUserService
         if (!string.IsNullOrWhiteSpace(user.FirstName) && !string.IsNullOrWhiteSpace(user.LastName))
             user.Initials = (user.FirstName[0], user.LastName[0]).ToString().ToUpper();
 
+        if (string.IsNullOrWhiteSpace(updatedUser.UserName) && 
+            string.IsNullOrWhiteSpace(updatedUser.FirstName) && 
+            string.IsNullOrWhiteSpace(updatedUser.LastName) &&
+            string.IsNullOrWhiteSpace(updatedUser.Email))
+        {
+            throw new KeyNotFoundException("You must provide at least one field to update your user");
+        }
+        
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded) throw new KeyNotFoundException
             (string.Join(", ", result.Errors.Select(e => e.Description)));
 
         return new UpdateUserResponseDto
         {
-            UserName = user.UserName,
-            Email = user.Email,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Initials = user.Initials
+            UserName = user.UserName ?? string.Empty,
+            Email = user.Email ?? string.Empty,
+            FirstName = user.FirstName ?? string.Empty,
+            LastName = user.LastName ?? string.Empty,
+            Initials = user.Initials ?? string.Empty
         };
     }
     
@@ -190,15 +199,15 @@ public class UserService: IUserService
             throw new KeyNotFoundException("Current password is required");
 
         var isCurrentPasswordValid = await _userManager.CheckPasswordAsync(user, userPassword.CurrentPassword);
+        
+        if (string.IsNullOrWhiteSpace(userPassword.NewPassword))
+            throw new KeyNotFoundException("New password is required");
 
         if (!isCurrentPasswordValid)
             throw new InvalidOperationException("The password you have entered does not match the current password");
 
         if (userPassword.NewPassword == userPassword.CurrentPassword)
             throw new InvalidOperationException("The new password must be different from old password");
-        
-        if (string.IsNullOrWhiteSpace(userPassword.NewPassword))
-            throw new KeyNotFoundException("New password is required");
 
         var result = await _userManager.ChangePasswordAsync
             (user, userPassword.CurrentPassword, userPassword.NewPassword);
