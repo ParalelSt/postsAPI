@@ -1,9 +1,9 @@
-using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using PostsAPI.Data;
 using PostsAPI.DTO.Post.Request;
 using PostsAPI.DTO.Post.Response;
 using PostsAPI.Entities;
+using PostsAPI.Exceptions;
 
 namespace PostsAPI.Services;
 
@@ -32,7 +32,7 @@ public class PostService: IPostService
     {
         if (string.IsNullOrWhiteSpace(createPost.Content) || string.IsNullOrWhiteSpace(createPost.Title))
         {
-            throw new KeyNotFoundException("You must enter the post details");
+            throw new NotFoundException("You must enter the post details");
         }
 
         var post = new Post
@@ -71,17 +71,17 @@ public class PostService: IPostService
 
         if (post == null)
         {
-            throw new KeyNotFoundException("Post not found");
+            throw new NotFoundException("Post not found");
         }
         
         if (post.UserId != userId)
         {
-            throw new UnauthorizedAccessException("You can only edit your own posts");
+            throw new UnauthorizedException("You can only edit your own posts");
         }
 
         if (string.IsNullOrWhiteSpace(updatedPost.Title) || string.IsNullOrWhiteSpace(updatedPost.Content))
         {
-            throw new KeyNotFoundException("You must enter either a new title or new content");
+            throw new NotFoundException("You must enter either a new title or new content");
         }
         
         post.Title = updatedPost.Title;
@@ -107,12 +107,12 @@ public class PostService: IPostService
 
         if (post == null)
         {
-            throw new KeyNotFoundException("Post not found");
+            throw new NotFoundException("Post not found");
         }
 
         if (post.UserId != userId)
         {
-            throw new UnauthorizedAccessException("This is not your post");
+            throw new UnauthorizedException("This is not your post");
         }
         
         _dbContext.Remove(post);

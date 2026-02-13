@@ -1,7 +1,5 @@
 using PostsAPI.DTO.Post.Request;
 using PostsAPI.DTO.Post.Response;
-using PostsAPI.Entities;
-
 namespace PostsAPI.Services;
 
 public interface IPostService

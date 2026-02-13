@@ -34,18 +34,12 @@ public class PostController : BaseApiController
     [HttpPost("create-post"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<CreatePostResponseDto>> CreatePost(CreatePostDto dto)
     {
-        try
-        {
-            var userId = GetUserId();
-            var userName = GetUserName();
-            var result = await _postService.CreatePost(userName, userId, dto);
+        var userId = GetUserId();
+        var userName = GetUserName();
+        var result = 
+            await _postService.CreatePost(userName, userId, dto);
 
-            return Ok(result);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(result);
     }
     
     
@@ -54,17 +48,11 @@ public class PostController : BaseApiController
     [HttpGet("posts-current-user"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<List<PostResponseDto>>> GetPostsFromCurrentUser()
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _postService.GetPostsFromCurrentUser(userId);
+        var userId = GetUserId();
+        var result = 
+            await _postService.GetPostsFromCurrentUser(userId);
 
-            return Ok(result);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(result);
     }
     
     
@@ -73,17 +61,11 @@ public class PostController : BaseApiController
     [HttpPut("update-post/{postId}"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<UpdatePostResponseDto>> UpdatePost(string postId, UpdatePostDto dto)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _postService.UpdatePost(userId, postId, dto);
+        var userId = GetUserId();
+        var result = 
+            await _postService.UpdatePost(userId, postId, dto);
 
-            return Ok(result);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(result);
     }
     
     
@@ -92,17 +74,11 @@ public class PostController : BaseApiController
     [HttpDelete("delete-post/{postId}"), Authorize(Roles = "Admin, User")]
     public async Task<ActionResult<string>> DeletePost(string postId)
     {
-        try
-        {
-            var userId = GetUserId();
-            var result = await _postService.DeletePost(userId, postId);
+        var userId = GetUserId();
+        var result = 
+            await _postService.DeletePost(userId, postId);
 
-            return Ok(result);
-        }
-        catch (KeyNotFoundException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(result);
     }
     
 

@@ -1,11 +1,5 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using PostsAPI.DTO.User.Request;
 using PostsAPI.DTO.User.Response;
 using PostsAPI.Entities;
@@ -42,12 +36,6 @@ public class UserController : BaseApiController
     public async Task<ActionResult<User>> GetCurrentUser()
     {
         var userId = GetUserId();
-        
-        if (userId == null)
-        {
-            throw new InvalidOperationException("You must be logged in");
-        }
-
         return await _userService.GetCurrentUser(userId);
     }
     
@@ -70,12 +58,6 @@ public class UserController : BaseApiController
     public async Task<ActionResult<UpdateUserResponseDto>> UpdateUser(UpdateUserDto dto)
     {
         var userId = GetUserId();
-        
-        if (userId == null)
-        {
-            throw new InvalidOperationException("You must be logged in");
-        }
-
         return await _userService.UpdateUser(userId, dto);
     }
     
@@ -85,12 +67,6 @@ public class UserController : BaseApiController
     public async Task<ActionResult<string>> UpdateUserPassword(UpdateUserPasswordDto dto)
     {
         var userId = GetUserId();
-        
-        if (userId == null)
-        {
-            throw new InvalidOperationException("You must be logged in");
-        }
-
         return await _userService.UpdateUserPassword(userId, dto);
     }
     
@@ -101,12 +77,6 @@ public class UserController : BaseApiController
     public async Task<ActionResult<string>> DeleteUser()
     {
         var userId = GetUserId();
-        
-        if (userId == null)
-        {
-            throw new InvalidOperationException("You must be logged in");
-        }
-
         return await _userService.DeleteUser(userId);
     }
 }
